@@ -1,4 +1,3 @@
-# ファイル: app/ytdlp_handler.py
 import os
 import subprocess
 import requests
@@ -15,37 +14,56 @@ YT_DLP_LATEST_RELEASE_URL = 'https://api.github.com/repos/yt-dlp/yt-dlp/releases
 active_processes = {}
 
 def setup_directories():
+    """必要なディレクトリを作成する"""
     for dir_path in [TOOLS_DIR, DOWNLOADS_DIR]:
-        if not os.path.exists(dir_path): os.makedirs(dir_path)
+        if not os.path.exists(dir_path): 
+            os.makedirs(dir_path)
 
 def download_yt_dlp(force_update=False):
-    if not force_update and os.path.exists(YT_DLP_PATH): return True
+    """yt-dlpの実行ファイルをダウンロードする"""
+    if not force_update and os.path.exists(YT_DLP_PATH): 
+        return True
     if force_update and os.path.exists(YT_DLP_PATH):
-        try: os.remove(YT_DLP_PATH)
-        except OSError: return False
+        try: 
+            os.remove(YT_DLP_PATH)
+        except OSError: 
+            return False
+    
     print("Downloading yt-dlp.exe...")
     try:
+        # GitHubから最新リリース情報を取得
         response = requests.get(YT_DLP_LATEST_RELEASE_URL, timeout=15)
         response.raise_for_status()
-        asset_url = next((asset['browser_download_url'] for asset in response.json().get('assets', []) if asset['name'] == 'yt-dlp.exe'), None)
-        if not asset_url: return False
+        
+        # yt-dlp.exeのダウンロードURLを取得
+        asset_url = next((asset['browser_download_url'] for asset in response.json().get('assets', []) 
+                         if asset['name'] == 'yt-dlp.exe'), None)
+        if not asset_url: 
+            return False
+        
+        # yt-dlp.exeをダウンロード
         with requests.get(asset_url, stream=True) as r:
             r.raise_for_status()
             with open(YT_DLP_PATH, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192): f.write(chunk)
+                for chunk in r.iter_content(chunk_size=8192): 
+                    f.write(chunk)
         return True
     except Exception as e: 
         print(f"Error downloading yt-dlp: {e}")
         return False
 
 def get_yt_dlp_version():
-    if not os.path.exists(YT_DLP_PATH): return "Not Found"
+    """yt-dlpのバージョンを取得する"""
+    if not os.path.exists(YT_DLP_PATH): 
+        return "Not Found"
     try:
-        result = subprocess.run([YT_DLP_PATH, '--version'], capture_output=True, text=True, check=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
+        result = subprocess.run([YT_DLP_PATH, '--version'], capture_output=True, text=True, 
+                              check=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
         return result.stdout.strip()
-    except Exception: return "Error"
+    except Exception: 
+        return "Error"
 
-def get_available_formats(url):
+def get_available_formats(url, cookie_browser=None):
     """指定されたURLから利用可能なフォーマット一覧を取得する"""
     ydl_opts = {
         'quiet': True, 
@@ -53,6 +71,11 @@ def get_available_formats(url):
         'noplaylist': True,
         'no_warnings': True
     }
+    
+    # Cookieブラウザ指定がある場合は追加
+    if cookie_browser and cookie_browser != 'none':
+        ydl_opts['cookiesfrombrowser'] = (cookie_browser,)
+    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -118,12 +141,14 @@ def get_available_formats(url):
         return {'success': False, 'error': str(e)}
 
 def parse_progress(line):
+    """yt-dlpの進捗出力から進捗情報をパースする"""
     match = re.search(r'\[download\]\s+([\d\.]+)% of\s+~?(.+?)\s+at\s+(.+?)\s+ETA\s+(.+)', line)
     if match:
         return {'progress': float(match.group(1)), 'details': f"of {match.group(2)} at {match.group(3)} ETA {match.group(4)}"}
     return None
 
 def build_download_command(item):
+    """ダウンロードアイテムからyt-dlpコマンドを構築する"""
     options = item.get('options', {})
     save_path = options.get('savePath', DOWNLOADS_DIR)
     output_template = os.path.join(save_path, '%(title)s.%(ext)s')

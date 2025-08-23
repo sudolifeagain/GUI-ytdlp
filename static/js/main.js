@@ -1,4 +1,3 @@
-// ファイル: static/js/main.js
 import { initializeTranslations, state } from './state.js';
 import * as socket from './socket.js';
 import * as ui from './ui.js';
@@ -8,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeTranslations(window.LANG, window.T);
     socket.connect();
 
-    // --- DOM Element Selections ---
+    // DOM Element Selections
     const getFormatsBtn = document.getElementById('get-formats-btn');
     const videoUrlsTextarea = document.getElementById('video-urls');
     const videoFormatPreset = document.getElementById('video-format-preset');
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cookieHelpBtn = document.getElementById('cookie-help-btn');
     const cookieHelpModal = document.getElementById('cookie-help-modal');
 
-    // --- Event Listeners ---
+    // Event Listeners
     videoUrlsTextarea.addEventListener('input', () => {
         const urls = videoUrlsTextarea.value.trim().split('\n').filter(url => url.trim());
         getFormatsBtn.disabled = urls.length !== 1;

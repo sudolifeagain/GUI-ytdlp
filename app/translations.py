@@ -1,6 +1,4 @@
 
-# ★★★ 新しいファイル ★★★
-# ファイル: app/translations.py
 translations = {
     "ja": {
         "update_button": "Update", "control_panel": "コントロールパネル", "video_url_label": "動画URL (1行に1つ):",

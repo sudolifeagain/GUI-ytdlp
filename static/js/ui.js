@@ -1,4 +1,3 @@
-// ファイル: static/js/ui.js
 import { state } from './state.js';
 
 const controls = {
@@ -16,13 +15,12 @@ const downloadListUl = document.getElementById('download-list');
 
 export function getCurrentOptions() {
     const presetValue = controls.videoFormatPreset.value;
-    // 'custom' 以外が選択されている場合、customVideoFormatの値は無視する
+    // 'custom' 以外が選択されている場合は、プリセット値を使用する
     const selectedFormat = presetValue !== 'custom' ? presetValue : controls.customVideoFormat.value;
 
     return {
         savePath: controls.savePath.value,
         selectedFormat: selectedFormat,
-        // audioOnlyとaudioFormatは常に現在のUIの状態を反映
         audioOnly: controls.audioOnly.checked,
         audioFormat: controls.audioFormat.value,
         cookieBrowser: controls.cookieBrowser.value,

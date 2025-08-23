@@ -1,5 +1,4 @@
-// ファイル: static/js/state.js
-// Holds the shared state for the application.
+// アプリケーションの共有状態を管理するモジュール
 export const state = {
     settings: {},
     lang: 'ja',

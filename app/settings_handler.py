@@ -1,6 +1,4 @@
 
-# ファイル: app/settings_handler.py
-# 役割: settings.jsonの読み書きを担当します。
 import os
 import json
 
@@ -11,12 +9,14 @@ DOWNLOADS_DIR = os.path.join(BASE_DIR, 'downloads')
 app_settings = {}
 
 def load_settings():
+    """settings.jsonファイルから設定を読み込む"""
     global app_settings
     try:
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
                 app_settings = json.load(f)
         else:
+            # デフォルト設定
             app_settings = {
                 "general": {"concurrentDownloads": 1, "showWelcomeNotice": True},
                 "last_options": {"savePath": DOWNLOADS_DIR}
@@ -26,9 +26,11 @@ def load_settings():
         print(f"Error loading settings: {e}")
     return app_settings
 
-def save_settings(new_settings):
+def save_settings(new_settings=None):
+    """設定をsettings.jsonファイルに保存する"""
     global app_settings
-    app_settings = new_settings
+    if new_settings:
+        app_settings = new_settings
     try:
         with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
             json.dump(app_settings, f, indent=4)
@@ -36,6 +38,7 @@ def save_settings(new_settings):
         print(f"Error saving settings: {e}")
 
 def get_setting(key, default=None):
+    """指定されたキーの設定値を取得する"""
     return app_settings.get(key, default)
 
 # ---

@@ -4,6 +4,11 @@
         "showWelcomeNotice": false
     },
     "last_options": {
-        "savePath": "C:\\Users\\admin\\Documents\\Github\\GUI-ytdlp\\downloads"
+        "savePath": "C:\\Users\\admin\\Documents\\Github\\GUI-ytdlp\\downloads",
+        "selectedFormat": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "audioOnly": false,
+        "audioFormat": "best",
+        "cookieBrowser": "firefox",
+        "customArgs": ""
     }
 }

@@ -1,6 +1,5 @@
 
-// ファイル: static/js/socket.js
-// Manages all WebSocket communication with the server.
+// WebSocket通信を管理するモジュール
 import { renderQueue, updateQueueItem, updateItemProgress, applySettings, showUpdateStatus, showSaveStatus, updateVersion } from './ui.js';
 import { setSettings } from './state.js';
 
