@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yt-dlp GUI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        const LANG = '{{ lang }}';
+        const T = {{ t|tojson }};
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>yt-dlp GUI</h1>
+            <div class="header-controls">
+                <div id="version-info">
+                    yt-dlp: <span id="yt-dlp-version">...</span>
+                </div>
+                <button id="update-btn">{{ t.update_button }}</button>
+                <span id="update-status"></span>
+            </div>
+        </header>
+
+        <main>
+            <section class="control-panel">
+                <h2>{{ t.control_panel }}</h2>
+                <div class="url-input-area">
+                    <label for="video-urls">{{ t.video_url_label }}</label>
+                    <textarea id="video-urls" rows="5" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+                </div>
+                
+                <div class="settings-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="main-settings">{{ t.main }}</button>
+                        <button class="tab-button" data-tab="video-settings">{{ t.video }}</button>
+                        <button class="tab-button" data-tab="audio-settings">{{ t.audio }}</button>
+                        <button class="tab-button" data-tab="other-settings">{{ t.other }}</button>
+                    </div>
+
+                    <div id="main-settings" class="tab-content active">
+                        <div class="form-group">
+                            <label for="save-path">{{ t.save_path_label }}</label>
+                            <div class="path-input-group">
+                                <input type="text" id="save-path" readonly>
+                                <button id="browse-btn">{{ t.browse }}</button>
+                                <button id="open-folder-btn">{{ t.open }}</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="concurrent-downloads">{{ t.concurrent_downloads_label }}</label>
+                            <input type="number" id="concurrent-downloads" value="1" min="1" max="10">
+                        </div>
+                    </div>
+
+                    <div id="video-settings" class="tab-content">
+                        <div class="form-group">
+                            <label for="video-format">{{ t.video_format_label }}</label>
+                            <select id="video-format">
+                                <option value="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best">{{ t.best_quality_mp4 }}</option>
+                                <option value="bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/best">{{ t.best_quality_webm }}</option>
+                                <option value="bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best">1080p (mp4)</option>
+                                <option value="bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best">720p (mp4)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="audio-settings" class="tab-content">
+                        <div class="form-group">
+                            <input type="checkbox" id="audio-only" name="audio-only">
+                            <label for="audio-only">{{ t.audio_only_label }}</label>
+                        </div>
+                        <div class="form-group" id="audio-format-group">
+                            <label for="audio-format">{{ t.audio_format_label }}</label>
+                            <select id="audio-format">
+                                <option value="best">{{ t.best_quality_original }}</option>
+                                <option value="mp3">mp3</option>
+                                <option value="m4a">m4a</option>
+                                <option value="opus">opus</option>
+                                <option value="wav">wav</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="other-settings" class="tab-content">
+                        <div class="form-group">
+                            <div class="label-with-help">
+                                <label for="cookie-browser">{{ t.cookie_browser_label }}</label>
+                                <span class="help-tooltip" id="cookie-help-btn">?</span>
+                            </div>
+                            <select id="cookie-browser">
+                                <option value="none">{{ t.not_used }}</option>
+                                <option value="firefox">Firefox</option>
+                                <option value="chrome">{{ t.chrome_not_recommended }}</option>
+                                <option value="edge">Edge</option>
+                                <option value="brave">Brave</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-args">{{ t.custom_args_label }}</label>
+                            <input type="text" id="custom-args" placeholder="--embed-thumbnail --add-metadata">
+                        </div>
+                        <hr>
+                        <div class="form-group">
+                            <button id="save-settings-btn">{{ t.save_settings_button }}</button>
+                            <span id="save-status"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="add-to-queue-btn">{{ t.add_to_queue_button }}</button>
+                </div>
+            </section>
+
+            <section class="download-list-area">
+                <div class="list-header">
+                    <h2>{{ t.download_queue_title }}</h2>
+                    <button id="clear-queue-btn">{{ t.clear_completed_button }}</button>
+                </div>
+                <ul id="download-list">
+                    <li class="list-placeholder">{{ t.no_downloads_yet }}</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <div id="cookie-help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>{{ t.cookie_help_title }}</h3>
+            <p>{{ t.cookie_help_p1 }}</p>
+            <ul>
+                <li>{{ t.cookie_help_li1|safe }}</li>
+                <li>{{ t.cookie_help_li2|safe }}</li>
+            </ul>
+            <p class="modal-close-info">{{ t.cookie_help_close }}</p>
+        </div>
+    </div>
+
+    <!-- ★★★ ここからが修正点 ★★★ -->
+    <div id="welcome-modal" class="modal-overlay {% if show_welcome_notice %}show-on-load{% endif %}">
+    <!-- ★★★ ここまでが修正点 ★★★ -->
+        <div class="modal-content">
+            <h3>{{ t.welcome_title }}</h3>
+            <p>{{ t.welcome_p1 }}</p>
+            <p><strong>{{ t.welcome_disclaimer }}</strong></p>
+            <ul>
+                <li>{{ t.welcome_li1 }}</li>
+                <li>{{ t.welcome_li2 }}</li>
+                <li>{{ t.welcome_li3 }}</li>
+                <li>{{ t.welcome_li4 }}</li>
+            </ul>
+            <div class="modal-actions">
+                <button id="dont-show-again-btn">{{ t.dont_show_again }}</button>
+                <button id="close-welcome-btn">{{ t.close }}</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>

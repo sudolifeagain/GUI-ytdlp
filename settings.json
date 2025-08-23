@@ -1,0 +1,9 @@
+{
+    "general": {
+        "concurrentDownloads": 1,
+        "showWelcomeNotice": false
+    },
+    "last_options": {
+        "savePath": "C:\\Users\\admin\\Documents\\Github\\GUI-ytdlp\\downloads"
+    }
+}
