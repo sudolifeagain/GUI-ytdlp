@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>yt-dlp GUI</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script>
         const LANG = '{{ lang }}';
         const T = {{ t|tojson }};
@@ -29,6 +29,7 @@
                 <div class="url-input-area">
                     <label for="video-urls">{{ t.video_url_label }}</label>
                     <textarea id="video-urls" rows="5" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+                    <button id="get-formats-btn" disabled>フォーマット取得</button>
                 </div>
                 
                 <div class="settings-tabs">
@@ -57,21 +58,26 @@
                     <div id="video-settings" class="tab-content">
                         <div class="form-group">
                             <label for="video-format">{{ t.video_format_label }}</label>
-                            <select id="video-format">
-                                <option value="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best">{{ t.best_quality_mp4 }}</option>
-                                <option value="bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/best">{{ t.best_quality_webm }}</option>
-                                <option value="bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best">1080p (mp4)</option>
-                                <option value="bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best">720p (mp4)</option>
-                            </select>
+                            <div id="format-selection-container">
+                                <select id="video-format-preset">
+                                    <option value="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best">{{ t.best_quality_mp4 }}</option>
+                                    <option value="bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/best">{{ t.best_quality_webm }}</option>
+                                    <option value="custom">カスタム選択...</option>
+                                </select>
+                                <div id="custom-format-selector" style="display: none;">
+                                    <label>解像度/拡張子:</label>
+                                    <select id="custom-video-format"></select>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
+                    
                     <div id="audio-settings" class="tab-content">
                         <div class="form-group">
                             <input type="checkbox" id="audio-only" name="audio-only">
                             <label for="audio-only">{{ t.audio_only_label }}</label>
                         </div>
-                        <div class="form-group" id="audio-format-group">
+                        <div class="form-group" id="audio-format-group" style="display: none;">
                             <label for="audio-format">{{ t.audio_format_label }}</label>
                             <select id="audio-format">
                                 <option value="best">{{ t.best_quality_original }}</option>
@@ -113,7 +119,7 @@
                     <button id="add-to-queue-btn">{{ t.add_to_queue_button }}</button>
                 </div>
             </section>
-
+            
             <section class="download-list-area">
                 <div class="list-header">
                     <h2>{{ t.download_queue_title }}</h2>
@@ -126,6 +132,7 @@
         </main>
     </div>
 
+    <!-- Modals -->
     <div id="cookie-help-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>{{ t.cookie_help_title }}</h3>
@@ -137,10 +144,7 @@
             <p class="modal-close-info">{{ t.cookie_help_close }}</p>
         </div>
     </div>
-
-    <!-- ★★★ ここからが修正点 ★★★ -->
     <div id="welcome-modal" class="modal-overlay {% if show_welcome_notice %}show-on-load{% endif %}">
-    <!-- ★★★ ここまでが修正点 ★★★ -->
         <div class="modal-content">
             <h3>{{ t.welcome_title }}</h3>
             <p>{{ t.welcome_p1 }}</p>
@@ -159,6 +163,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
-    <script src="/static/script.js"></script>
+    <!-- ★★★ 修正点: Flaskのurl_forを使い、type="module"を追加 ★★★ -->
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>
 </html>
