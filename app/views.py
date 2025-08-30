@@ -3,6 +3,7 @@ import subprocess
 import os
 from . import ytdlp_handler, settings_handler
 from .translations import translations
+from .content_analyzer import ContentAnalyzer
 
 main_bp = Blueprint('main', __name__)
 
@@ -18,6 +19,19 @@ def index():
     
     return render_template('index.html', t=translations[lang], lang=lang, show_welcome_notice=show_welcome)
 
+@main_bp.route('/api/analyze-url', methods=['POST'])
+def analyze_url_api():
+    """URLを分析して種類と詳細情報を取得"""
+    data = request.json
+    url = data.get('url')
+    cookie_browser = data.get('cookieBrowser', 'none')
+    
+    if not url:
+        return jsonify({'success': False, 'error': 'URL is required'}), 400
+    
+    result = ContentAnalyzer.analyze_url(url, cookie_browser)
+    return jsonify(result)
+
 @main_bp.route('/api/formats', methods=['POST'])
 def get_formats_api():
     """動画URLから利用可能なフォーマット一覧を取得するAPI"""
@@ -28,7 +42,15 @@ def get_formats_api():
     if not url:
         return jsonify({'success': False, 'error': 'URL is required'}), 400
     
-    result = ytdlp_handler.get_available_formats(url, cookie_browser)
+    # コンテンツタイプに応じた処理
+    content_type = ContentAnalyzer.detect_content_type(url)
+    
+    if content_type == 'live':
+        from .live_handler import LiveHandler
+        result = LiveHandler.get_live_formats(url, cookie_browser)
+    else:
+        result = ytdlp_handler.get_available_formats(url, cookie_browser)
+    
     return jsonify(result)
 
 @main_bp.route('/select-folder', methods=['POST'])

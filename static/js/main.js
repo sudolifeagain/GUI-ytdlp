@@ -2,6 +2,8 @@ import { initializeTranslations, state } from './state.js';
 import * as socket from './socket.js';
 import * as ui from './ui.js';
 import * as api from './api.js';
+import { ContentAnalyzerUI } from './ui/content-analyzer-ui.js';
+import { analyzeUrl } from './api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeTranslations(window.LANG, window.T);
@@ -26,10 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const cookieHelpBtn = document.getElementById('cookie-help-btn');
     const cookieHelpModal = document.getElementById('cookie-help-modal');
 
+    // URL解析UI の初期化
+    const contentAnalyzerUI = new ContentAnalyzerUI();
+    
+    // URL解析ボタンの追加
+    const urlInputArea = document.querySelector('.url-input-area');
+    const analyzeBtn = document.createElement('button');
+    analyzeBtn.id = 'analyze-url-btn';
+    analyzeBtn.textContent = 'URL解析';
+    analyzeBtn.disabled = true;
+    
+    // getFormatsBtn の後に追加
+    getFormatsBtn.parentNode.insertBefore(analyzeBtn, getFormatsBtn.nextSibling);
+    
     // Event Listeners
     videoUrlsTextarea.addEventListener('input', () => {
         const urls = videoUrlsTextarea.value.trim().split('\n').filter(url => url.trim());
-        getFormatsBtn.disabled = urls.length !== 1;
+        const hasSingleUrl = urls.length === 1;
+        
+        analyzeBtn.disabled = !hasSingleUrl;
+        getFormatsBtn.disabled = !hasSingleUrl;
     });
 
     getFormatsBtn.addEventListener('click', async () => {
@@ -51,14 +69,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     addToQueueBtn.addEventListener('click', () => {
-        const urls = videoUrlsTextarea.value.split('\n').map(url => url.trim()).filter(url => url);
+        const mainUrl = videoUrlsTextarea.value.trim();
+        if (!mainUrl) {
+            alert(state.translations.alert_enter_url);
+            return;
+        }
+
+        let urls = [];
+        const analysisResult = document.getElementById('url-analysis-result');
+        
+        if (analysisResult && analysisResult.style.display !== 'none') {
+            // URL解析済みの場合
+            const playlistCheckbox = document.getElementById('download-all-playlist');
+            
+            if (playlistCheckbox && playlistCheckbox.checked) {
+                // プレイリスト全体
+                urls = contentAnalyzerUI.getSelectedPlaylistItems();
+            } else {
+                urls = [mainUrl];
+            }
+        } else {
+            // 通常の処理
+            urls = videoUrlsTextarea.value.split('\n').map(url => url.trim()).filter(url => url);
+        }
+        
         if (urls.length > 0) {
             const options = ui.getCurrentOptions();
+            
+            // ライブ配信の場合は特別なオプションを追加
+            const liveMode = contentAnalyzerUI.getCurrentLiveMode();
+            if (liveMode) {
+                options.liveMode = liveMode;
+            }
+            
             socket.addToQueue(urls, options);
             videoUrlsTextarea.value = '';
+            contentAnalyzerUI.hideAnalysisResult();
+            analyzeBtn.disabled = true;
             getFormatsBtn.disabled = true;
-        } else {
-            alert(state.translations.alert_enter_url);
         }
     });
 
@@ -106,6 +154,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // URL解析ボタンのイベントリスナー
+    analyzeBtn.addEventListener('click', async () => {
+        const url = videoUrlsTextarea.value.trim();
+        if (!url) return;
+        
+        ui.showLoading(analyzeBtn, 'URL解析');
+        const cookieBrowser = document.getElementById('cookie-browser')?.value || 'none';
+        
+        try {
+            const result = await analyzeUrl(url, cookieBrowser);
+            if (result.success) {
+                contentAnalyzerUI.showAnalysisResult(result);
+            } else {
+                alert('URL解析エラー: ' + result.error);
+            }
+        } catch (error) {
+            alert('URL解析エラー: ' + error.message);
+        } finally {
+            ui.hideLoading(analyzeBtn, 'URL解析');
+        }
+    });
+    
     // --- Modal Logic ---
     const closeModal = (modal) => modal.style.display = 'none';
     

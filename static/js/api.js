@@ -65,3 +65,27 @@ export async function openFolder(path) {
         console.error('Error opening folder:', error);
     }
 }
+
+export async function analyzeUrl(url, cookieBrowser = 'none') {
+    try {
+        const response = await fetch('/api/analyze-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                url: url,
+                cookieBrowser: cookieBrowser 
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error analyzing URL:', error);
+        return { success: false, error: error.message };
+    }
+}
