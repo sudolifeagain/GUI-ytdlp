@@ -72,7 +72,16 @@ hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }
 .item-delete-btn { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; line-height: 20px; text-align: center; border: none; background: #e0e0e0; color: #555; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; }
 .item-delete-btn:hover { background: #dc3545; color: white; }
 .item-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.item-url { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; margin-right: 30px; }
+.item-url {
+    font-weight: bold;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    margin-right: 30px;
+    word-break: break-all;
+    max-width: 350px;
+}
 .item-status { font-size: 0.9em; padding: 3px 8px; border-radius: 12px; color: #fff; white-space: nowrap; }
 .item-status.waiting { background-color: #6c757d; }
 .item-status.downloading { background-color: #007bff; }
