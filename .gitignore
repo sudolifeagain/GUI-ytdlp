@@ -1,5 +1,5 @@
 /venv
 /downloads
-.json
+settings.json
 /app/__pycache__/
 blog-article-draft.md
